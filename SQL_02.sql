@@ -3,6 +3,7 @@ CREATE TABLE dept(
     dep_no      NUMBER(3)
     ,dep_name   VARCHAR2(20)    NOT NULL UNIQUE
     ,loc        VARCHAR2(20)    NOT NULL
+
     ,PRIMARY KEY(dep_no)    -- PK / FK 는 밑에 따로 쓴다.
 );
 
@@ -79,3 +80,30 @@ DELETE FROM employee;
 
 -- FK 제약조건 켜기
 ALTER TABLE employee DISABLE CONSTRAINT employee_mgr_emp_no_fk;
+
+-- customer(고객) 테이블 생성
+CREATE TABLE customer(
+    cus_no      NUMBER(2)
+    ,cus_name   VARCHAR2(20)    NOT NULL
+    ,tel_num    VARCHAR2(20)    NOT NULL
+    ,jumin_num  CHAR(13)        NOT NULL UNIQUE
+    ,emp_no     NUMBER(3)
+
+    ,PRIMARY KEY(cus_no)
+    ,FOREIGN KEY(emp_no) REFERENCES employee(emp_no)
+);
+
+-- customer 테이블 검색
+SELECT * FROM customer;
+
+-- salary_grade 테이블 생성
+CREATE TABLE salary_grade (
+    sal_grade_no    NUMBER(2)
+    ,min_salary     NUMBER(9)   NOT NULL
+    ,max_salary     NUMBER(9)   NOT NULL
+
+    ,PRIMARY KEY(sal_grade_no)
+);
+
+-- salary_grade 테이블 검색
+SELECT * FROM salary_grade;
