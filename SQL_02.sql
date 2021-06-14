@@ -83,7 +83,7 @@ ALTER TABLE employee DISABLE CONSTRAINT employee_mgr_emp_no_fk;
 
 -- customer(고객) 테이블 생성
 CREATE TABLE customer(
-    cus_no      NUMBER(2)
+    cus_no      NUMBER(3)
     ,cus_name   VARCHAR2(20)    NOT NULL
     ,tel_num    VARCHAR2(20)    NOT NULL
     ,jumin_num  CHAR(13)        NOT NULL UNIQUE
@@ -95,6 +95,9 @@ CREATE TABLE customer(
 
 -- customer 테이블 검색
 SELECT * FROM customer;
+
+-- customer 테이블 삭제
+-- DROP TABLE customer;
 
 -- salary_grade 테이블 생성
 CREATE TABLE salary_grade (
