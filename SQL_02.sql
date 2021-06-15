@@ -9,14 +9,22 @@ CREATE TABLE dept(
 
 
 /*
--- dept 테이블 제거
-DROP TABLE dept;
--- employee 테이블 제거
-DROP TABLE employee;
--- customer 테이블 제거
-DROP TABLE customer;
+-- 테이블 삭제 순서
+-- salary_grade는 아무때나 삭제
+-- customer > employee > dept는 FK가 걸려있어서 참조하는 순으로 삭제해야 한다. (참조 당하는 테이블을 나중에 삭제)
+
 -- salary_grade 테이블 제거
 DROP TABLE salary_grade;
+-- customer 테이블 제거
+DROP TABLE customer;
+-- employee 테이블 제거
+DROP TABLE employee;
+-- dept 테이블 제거
+DROP TABLE dept;
+-- emp_sq 시퀀스 삭제
+DROP SEQUENCE emp_sq;
+-- cus_sq 시퀀스 삭제
+DROP SEQUENCE cus_sq;
 */
 
 -- 4개 행 데이터 입력
@@ -33,6 +41,14 @@ SELECT * FROM dept;
 
 -- dept 테이블의 dep_no가 10인 행을 검색하기
 SELECT * FROM dept WHERE dep_no = 10;
+
+-- employee 테이블에서 PK 값으로 사용할 일련번호를 생성하는 시퀀스 생성하기 (일련 번호 자동 생성기)
+-- 시퀀스 이름 명명 규칙: 테이블명_sq
+CREATE SEQUENCE emp_sq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999;
 
 -- employee 테이블 생성. 직원 정보가 저장되는 테이블이다.
 CREATE TABLE employee(
@@ -67,28 +83,29 @@ ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD';
 -- employee 테이블에 20개 행 입력하기
 -- TO_DATE 변환함수 사용하여 날짜 입력
 -- INSERT INTO employee VALUES( 1, '홍길동', 10, '사장', 5000, to_date('1980-01-01','YYYY-MM-DD'), '7211271109410', '01099699515', NULL);
-INSERT INTO employee VALUES( 1, '홍길동', 10, '사장', 5000, '1980-01-01', '7211271109410', '01099699515', NULL);
-INSERT INTO employee VALUES( 2, '한국남', 20, '부장', 3000, '1988-11-01', '6002061841224', '01024948424', 1);
-INSERT INTO employee VALUES( 3, '이순신', 20, '과장', 3500, '1989-03-01', '6209172010520', '01026352672', 2);
-INSERT INTO employee VALUES( 4, '이미라', 30, '대리', 2503, '1983-04-01', '8409282070226', '01094215694', 17 );
-INSERT INTO employee VALUES( 5, '이순라', 20, '사원', 1200, '1990-05-01', '8401041483626', '01028585900', 3 );
-INSERT INTO employee VALUES( 6, '공부만', 30, '과장', 4003, '1995-05-01', '8402121563616', '01191338328', 17 );
-INSERT INTO employee VALUES( 7, '놀기만', 20, '과장', 2300, '1996-06-01', '8011221713914', '01029463523', 2 );
-INSERT INTO employee VALUES( 8, '채송화', 30, '대리', 1703, '1992-06-01', '8105271014112', '01047111052', 17 );
-INSERT INTO employee VALUES( 9, '무궁화', 10, '사원', 1100, '1984-08-01', '8303291319116', '01025672300', 12 );
-INSERT INTO employee VALUES( 10, '공부해', 30, '사원', 1303, '1988-11-01', '8410031281312', '01027073174', 4 );
-INSERT INTO employee VALUES( 11, '류별나', 20, '과장', 1600, '1989-12-01', '8409181463545', '01071628290', 2 );
-INSERT INTO employee VALUES( 12, '류명한', 10, '대리', 1800, '1990-10-01', '8207211661117', '01042072622', 20 );
-INSERT INTO employee VALUES( 13, '무궁화', 10, '부장', 3000, '1996-11-01', '8603231183011', '01098110955', 1 );
-INSERT INTO employee VALUES( 14, '채시라', 20, '사원', 3400, '1993-10-01', '8001172065410', '01044452437', 3 );
-INSERT INTO employee VALUES( 15, '최진실', 10, '사원', 2000, '1991-04-01', '8303101932611', '01027491145', 12 );
-INSERT INTO employee VALUES( 16, '김유신', 30, '사원', 4000, '1981-04-01', '7912031009014', '01098218448', 4 );
-INSERT INTO employee VALUES( 17, '이성계', 30, '부장', 2803, '1984-05-01', '8102261713921', '0165358075', 1 );
-INSERT INTO employee VALUES( 18, '강감찬', 30, '사원', 1003, '1986-07-01', '8203121977315', '01033583130', 4 );
-INSERT INTO employee VALUES( 19, '임꺽정', 20, '사원', 2200, '1988-04-01', '8701301040111', '01086253078', 7 );
-INSERT INTO employee VALUES( 20, '깨똥이', 10, '과장', 4500, '1990-05-01', '8811232452719', '01090084876', 13 );
+-- 계속 입력되는 데이터는 시퀀스를 사용한다.
+INSERT INTO employee VALUES( emp_sq.nextval, '홍길동', 10, '사장', 5000, '1980-01-01', '7211271109410', '01099699515', NULL);
+INSERT INTO employee VALUES( emp_sq.nextval, '한국남', 20, '부장', 3000, '1988-11-01', '6002061841224', '01024948424', 1);
+INSERT INTO employee VALUES( emp_sq.nextval, '이순신', 20, '과장', 3500, '1989-03-01', '6209172010520', '01026352672', 2);
+INSERT INTO employee VALUES( emp_sq.nextval, '이미라', 30, '대리', 2503, '1983-04-01', '8409282070226', '01094215694', 17 );
+INSERT INTO employee VALUES( emp_sq.nextval, '이순라', 20, '사원', 1200, '1990-05-01', '8401041483626', '01028585900', 3 );
+INSERT INTO employee VALUES( emp_sq.nextval, '공부만', 30, '과장', 4003, '1995-05-01', '8402121563616', '01191338328', 17 );
+INSERT INTO employee VALUES( emp_sq.nextval, '놀기만', 20, '과장', 2300, '1996-06-01', '8011221713914', '01029463523', 2 );
+INSERT INTO employee VALUES( emp_sq.nextval, '채송화', 30, '대리', 1703, '1992-06-01', '8105271014112', '01047111052', 17 );
+INSERT INTO employee VALUES( emp_sq.nextval, '무궁화', 10, '사원', 1100, '1984-08-01', '8303291319116', '01025672300', 12 );
+INSERT INTO employee VALUES( emp_sq.nextval, '공부해', 30, '사원', 1303, '1988-11-01', '8410031281312', '01027073174', 4 );
+INSERT INTO employee VALUES( emp_sq.nextval, '류별나', 20, '과장', 1600, '1989-12-01', '8409181463545', '01071628290', 2 );
+INSERT INTO employee VALUES( emp_sq.nextval, '류명한', 10, '대리', 1800, '1990-10-01', '8207211661117', '01042072622', 20 );
+INSERT INTO employee VALUES( emp_sq.nextval, '무궁화', 10, '부장', 3000, '1996-11-01', '8603231183011', '01098110955', 1 );
+INSERT INTO employee VALUES( emp_sq.nextval, '채시라', 20, '사원', 3400, '1993-10-01', '8001172065410', '01044452437', 3 );
+INSERT INTO employee VALUES( emp_sq.nextval, '최진실', 10, '사원', 2000, '1991-04-01', '8303101932611', '01027491145', 12 );
+INSERT INTO employee VALUES( emp_sq.nextval, '김유신', 30, '사원', 4000, '1981-04-01', '7912031009014', '01098218448', 4 );
+INSERT INTO employee VALUES( emp_sq.nextval, '이성계', 30, '부장', 2803, '1984-05-01', '8102261713921', '0165358075', 1 );
+INSERT INTO employee VALUES( emp_sq.nextval, '강감찬', 30, '사원', 1003, '1986-07-01', '8203121977315', '01033583130', 4 );
+INSERT INTO employee VALUES( emp_sq.nextval, '임꺽정', 20, '사원', 2200, '1988-04-01', '8701301040111', '01086253078', 7 );
+INSERT INTO employee VALUES( emp_sq.nextval, '깨똥이', 10, '과장', 4500, '1990-05-01', '8811232452719', '01090084876', 13 );
 
--- EMPLOYEE 테이블 데이터 삭제
+-- employee 테이블 데이터 삭제
 -- DELETE FROM employee;
 
 -- employee 테이블의 모든 컬럼과 모든 행을 검색하기
@@ -96,6 +113,15 @@ SELECT * FROM employee;
 
 -- employee_mgr_emp_no_fk 라는 이름의 FK 제약조건 켜기. 즉, 제약 조건 임시 활성화
 ALTER TABLE employee ENABLE CONSTRAINT employee_mgr_emp_no_fk;
+
+-- customer 테이블에서 PK 값으로 사용할 일련번호를 생성하는 시퀀스 생성하기 (일련 번호 자동 생성기)
+-- 시퀀스 이름 명명 규칙: 테이블명_sq
+CREATE SEQUENCE cus_sq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 100000;
+
 
 -- customer 테이블 생성, 고객 정보가 저장되는 테이블이다.
 -- 이름 명명 : 너무 추상적인 경우에만 cus_no 식으로 명명한다.
@@ -112,16 +138,16 @@ CREATE TABLE customer(
 );
 
 -- customer 테이블에 10개 행 데이터 입력
-INSERT INTO customer VALUES(1, '류민이', '123-123', '7001131537915', 3);
-INSERT INTO customer VALUES(2, '이강민', '343-1454', '6902161627914', 2);
-INSERT INTO customer VALUES(3, '이영희', '144-1655', '7503202636215', NULL);
-INSERT INTO customer VALUES(4, '김철이', '673-1674', '7704301234567', 4);
-INSERT INTO customer VALUES(5, '박류완', '123-1674', '7205211123675', 3);
-INSERT INTO customer VALUES(6, '서캔디', '673-1764', '6507252534566', NULL);
-INSERT INTO customer VALUES(7, '신똘이', '176-7677', '0006083648614', 7);
-INSERT INTO customer VALUES(8, '도쇠돌', '673-6774', '0008041346574', 9);
-INSERT INTO customer VALUES(9, '권홍이', '767-1234', '7312251234689', 13);
-INSERT INTO customer VALUES(10, '김안나', '767-1677', '7510152432168', 4);
+INSERT INTO customer VALUES(cus_sq.nextval, '류민이', '123-123', '7001131537915', 3);
+INSERT INTO customer VALUES(cus_sq.nextval, '이강민', '343-1454', '6902161627914', 2);
+INSERT INTO customer VALUES(cus_sq.nextval, '이영희', '144-1655', '7503202636215', NULL);
+INSERT INTO customer VALUES(cus_sq.nextval, '김철이', '673-1674', '7704301234567', 4);
+INSERT INTO customer VALUES(cus_sq.nextval, '박류완', '123-1674', '7205211123675', 3);
+INSERT INTO customer VALUES(cus_sq.nextval, '서캔디', '673-1764', '6507252534566', NULL);
+INSERT INTO customer VALUES(cus_sq.nextval, '신똘이', '176-7677', '0006083648614', 7);
+INSERT INTO customer VALUES(cus_sq.nextval, '도쇠돌', '673-6774', '0008041346574', 9);
+INSERT INTO customer VALUES(cus_sq.nextval, '권홍이', '767-1234', '7312251234689', 13);
+INSERT INTO customer VALUES(cus_sq.nextval, '김안나', '767-1677', '7510152432168', 4);
 
 
 -- customer 테이블의 모든 컬럼과 모든 행을 검색하기
