@@ -1,13 +1,3 @@
--- dept 테이블 생성
-CREATE TABLE dept(
-    dep_no      NUMBER(3)                        -- [부서번호] 저장 컬럼 선언. 자료형은 숫자형
-    ,dep_name   VARCHAR2(20)    NOT NULL UNIQUE  -- [부서명] 저장 컬럼 선언. 자료형은 문자형. 제약조건 필수입력, 중복제거
-    ,loc        VARCHAR2(20)    NOT NULL         -- [부서위치] 저장 컬럼 선언. 자료형은 문자형. 제약조건 필수입력
-
-    ,PRIMARY KEY(dep_no)            -- dep_np 컬럼에 primary key 설정하기. PK / FK 는 밑에 따로 쓴다.
-);
-
-
 /*
 -- 테이블 삭제 순서
 -- salary_grade는 아무때나 삭제
@@ -26,6 +16,15 @@ DROP SEQUENCE emp_sq;
 -- cus_sq 시퀀스 삭제
 DROP SEQUENCE cus_sq;
 */
+
+-- dept 테이블 생성
+CREATE TABLE dept(
+    dep_no      NUMBER(3)                        -- [부서번호] 저장 컬럼 선언. 자료형은 숫자형
+    ,dep_name   VARCHAR2(20)    NOT NULL UNIQUE  -- [부서명] 저장 컬럼 선언. 자료형은 문자형. 제약조건 필수입력, 중복제거
+    ,loc        VARCHAR2(20)    NOT NULL         -- [부서위치] 저장 컬럼 선언. 자료형은 문자형. 제약조건 필수입력
+
+    ,PRIMARY KEY(dep_no)            -- dep_np 컬럼에 primary key 설정하기. PK / FK 는 밑에 따로 쓴다.
+);
 
 -- 4개 행 데이터 입력
 -- INSERT INTO 테이블명(컬럼명1, 컬럼명2, ~ 컬럼명n) VALUES(입력 데이터, 입력 데이터, ~ 입력 데이터)
@@ -84,6 +83,7 @@ ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD';
 -- TO_DATE 변환함수 사용하여 날짜 입력
 -- INSERT INTO employee VALUES( 1, '홍길동', 10, '사장', 5000, to_date('1980-01-01','YYYY-MM-DD'), '7211271109410', '01099699515', NULL);
 -- 계속 입력되는 데이터는 시퀀스를 사용한다.
+-- 단, 개발 과정 중 입력 시 오류가 발생할 경우 시퀀스 넘버는 생성된 상태라서, 일련번호가 뜰 경우가 있다.
 INSERT INTO employee VALUES( emp_sq.nextval, '홍길동', 10, '사장', 5000, '1980-01-01', '7211271109410', '01099699515', NULL);
 INSERT INTO employee VALUES( emp_sq.nextval, '한국남', 20, '부장', 3000, '1988-11-01', '6002061841224', '01024948424', 1);
 INSERT INTO employee VALUES( emp_sq.nextval, '이순신', 20, '과장', 3500, '1989-03-01', '6209172010520', '01026352672', 2);
