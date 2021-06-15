@@ -120,7 +120,7 @@ CREATE SEQUENCE cus_sq
     START WITH 1
     INCREMENT BY 1
     MINVALUE 1
-    MAXVALUE 100000;
+    MAXVALUE 999;
 
 
 -- customer 테이블 생성, 고객 정보가 저장되는 테이블이다.
@@ -148,7 +148,6 @@ INSERT INTO customer VALUES(cus_sq.nextval, '신똘이', '176-7677', '0006083648614
 INSERT INTO customer VALUES(cus_sq.nextval, '도쇠돌', '673-6774', '0008041346574', 9);
 INSERT INTO customer VALUES(cus_sq.nextval, '권홍이', '767-1234', '7312251234689', 13);
 INSERT INTO customer VALUES(cus_sq.nextval, '김안나', '767-1677', '7510152432168', 4);
-
 
 -- customer 테이블의 모든 컬럼과 모든 행을 검색하기
 SELECT * FROM customer;
