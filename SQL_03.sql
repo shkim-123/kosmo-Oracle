@@ -28,7 +28,7 @@ FROM
         employee;
 
 
--- 17. ALIAS(별칭) 사용, "(더블 쿼트) 사용★★
+-- 17. ALIAS(별칭) 사용, "(더블 쿼터) 사용★★
 SELECT
         emp_no            AS "사원번호"
         , emp_name           "직원명"   -- AS 생략 가능
