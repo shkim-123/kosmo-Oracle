@@ -58,7 +58,7 @@ CREATE TABLE employee(
     ,salary     NUMBER(9)       DEFAULT 0       -- [연봉]이 저장되는 컬럼 선언. 제약조건 안주면 0.
                                                 -- DEFAULT 데이터는 자료형, 자료형 크기 범위 안에 들어있어야 한다.
     ,hire_date  DATE            DEFAULT SYSDATE -- [입사일]이 저장되는 컬럼 선언. 제약조건 안주면 현재 시간(SYSDATE)
-    ,jumun_num  CHAR(13)        NOT NULL UNIQUE -- [주민번호]가 저장되는 컬럼 선언. 제약조건 필주입력, 중복불가
+    ,jumin_num  CHAR(13)        NOT NULL UNIQUE -- [주민번호]가 저장되는 컬럼 선언. 제약조건 필주입력, 중복불가
     ,phone      VARCHAR2(15)    NOT NULL        -- [전화번호]가 저장되는 컬럼 선언. 제약조건 필수입력
     ,mgr_emp_no NUMBER(3)                       -- [직속상관직원번호]가 저장되는 컬럼 섬언
 
