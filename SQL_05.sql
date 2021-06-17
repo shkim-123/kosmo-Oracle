@@ -24,4 +24,4 @@ SELECT *
 SELECT *
   FROM employee
  WHERE SUBSTR(jumin_num, 1, 1) = '7'
-       AND SUBSTR(jumin_num, 7, 1) IN ('1', '3') ;
+       AND SUBSTR(jumin_num, 7, 1) IN ('1') ;
