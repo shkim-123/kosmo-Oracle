@@ -9,6 +9,7 @@ SELECT
                 -- NULL 값이 없는 컬럼을 쓴다.
 FROM
         employee;
+--
 
 -- 37. 담당직원이 있는 고객의 명수
 SELECT COUNT(emp_no) FROM customer;
@@ -18,6 +19,9 @@ SELECT COUNT(DISTINCT emp_no) FROM customer;
 
 -- 39. 직속 상관이 있는 직원의 명수
 SELECT COUNT(mgr_emp_no) FROM employee;
+
+-- 39-1 부하직원이 있는 직원의 명수
+SELECT COUNT(DISTINCT mgr_emp_no) FROM employee;
 
 -- 40. 직원번호, 직원명, 생일월-생일일 검색
 SELECT
@@ -207,11 +211,51 @@ ORDER BY
         END
         ASC;
 
--- 49. 직원번호, 직원명, 입사일(년-월-일)
+-- DECODE() 사용
+SELECT *
+FROM employee
+ORDER BY
+        DECODE(
+                jikup
+                ,'사장', 1
+                ,'부장', 2
+                ,'과장', 3
+                ,'대리', 4
+                ,'주임', 5
+                , 6
+        ) ASC;
+
+
+-- 49. 직원번호, 직원명, 입사일(년-월-일(요일) 분기 시분초)
 SELECT
         emp_no
         , emp_name
-        , TO_CHAR(hire_date,'YYYY-MM-DD')
+        , TO_CHAR(hire_date,'YYYY-MM-DD(DY) Q AM HH:MI:SS', 'NLS_DATE_LANGUAGE = Korean')
+FROM
+        employee;
+
+-- AM 추가 : 오전, 오후로 표현
+-- HH24 : 0 ~ 23시로 표현
+-- 요일 표현 : DAY (영어 풀네임) / DY (영어 약자)
+-- 세 번째 옵션에 'NLS_DATE_LANGUAGE = Korean' 추가, DAY (한글 풀네임) / DY (한글 약자)
+-- Q : 1 ~ 4 분기 출력
+
+-- 49 - 1 직원번호, 직원명, 입사일(x년-x월-x일(요일) x분기 x시x분x초)
+SELECT
+        emp_no
+        , emp_name
+        , TO_CHAR(hire_date, 'YYYY') || '년-'  || TO_CHAR(hire_date, 'MM')  || '월-'
+        || TO_CHAR(hire_date, 'DD')  || '일'   || TO_CHAR(hire_date, '(DY)', 'NLS_DATE_LANGUAGE = Korean')
+        || TO_CHAR(hire_date, ' Q')  || '분기' || TO_CHAR(hire_date, ' HH') || '시'
+        || TO_CHAR(hire_date, 'MI')  || '분'   || TO_CHAR(hire_date, 'SS')  || '초'
+FROM
+        employee;
+
+-- 2번째 케이스
+SELECT
+        emp_no
+        , emp_name
+        , TO_CHAR(hire_date,'YYYY"년"-MM"월"-DD"일"(DY) Q"분기" HH"시"MI"분"SS"초"', 'NLS_DATE_LANGUAGE = Korean')
 FROM
         employee;
 
@@ -268,14 +312,14 @@ SELECT
                 CASE
                     WHEN SUBSTR(jumin_num, 7, 1) IN('1', '2') THEN '19'
                     ELSE '20'
-                END || SUBSTR(jumin_num, 1, 6), 'YYYY-MM-DD')
-            + 100
-          , 'YYYY-MM-DD') "100일잔치날짜"
+                END || SUBSTR(jumin_num, 1, 6), 'YYYYMMDD'
+            ) + 100
+          , 'YYYY-MM-DD(DY)', 'NLS_DATE_LANGUAGE = Korean') "100일잔치날짜"
 FROM
         employee;
 -- 오라클은 날짜에 정수를 더하거나 빼면 결과가 날짜로 나온다
 
--- 54. 개강일이 2021년 5월 12일이고 종강일이 2021년 11월 10일 이다.
+-- 53-1. 개강일이 2021년 5월 12일이고 종강일이 2021년 11월 10일 이다.
 -- 며칠 동안 학원 생활을 하나?
 SELECT
         TO_DATE('20211110', 'YYYYMMDD')
@@ -283,7 +327,7 @@ SELECT
 FROM
         dual;
 
--- 55. 직원번호, 직원명, 현재나이, 입사일 당시 나이
+-- 54. 직원번호, 직원명, 현재나이, 입사일 당시 나이
 SELECT
         emp_no
         , emp_name
@@ -304,28 +348,70 @@ SELECT
 FROM
         employee;
 
--- 56. 직원번호, 직원명, 다가올생일날(년-월-일), 생일까지 남은일수를 검색
+-- 현재년도 - 출생년도 + 1 -> 현재나이
+-- 입사년도 - 출생년도 + 1 -> 입사일 당시 나이
+
+-- 55. 직원번호, 직원명, 주민번호, 다가올생일날(년-월-일), 생일까지 남은일수를 검색
 SELECT
         emp_no
         , emp_name
+        , jumin_num
         , TO_CHAR(
             TO_DATE(
              CASE
                   WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'MMDD'))
-                   - TO_NUMBER(SUBSTR(jumin_num, 3, 4)) < 0
-                     THEN '2021'
+                         - TO_NUMBER(SUBSTR(jumin_num, 3, 4)) < 0
+                        THEN '2021'
                   ELSE '2022'
-              END || SUBSTR(jumin_num, 3, 4) )
+              END || SUBSTR(jumin_num, 3, 4), 'YYYYMMDD')
              , 'YYYY-MM-DD')
            "다가올생일날"
         , TO_DATE(
             CASE
                 WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'MMDD'))
                       - TO_NUMBER(SUBSTR(jumin_num, 3, 4)) < 0
-                THEN '2021'
+                    THEN '2021'
                 ELSE '2022'
-            END || SUBSTR(jumin_num, 3, 4))
-          - TO_DATE(TO_CHAR(SYSDATE, 'YYYYMMDD'))||'일'
+            END || SUBSTR(jumin_num, 3, 4), 'YYYYMMDD' )
+          - TO_DATE(TO_CHAR(SYSDATE, 'YYYYMMDD'), 'YYYYMMDD') || '일'
           "생일까지 남은 일수"
 FROM
         employee;
+
+-- 올해생일날짜 - 현재날짜  -> 양수면 생일 안지남(올해), 음수면 생일 지남(내년)
+-- 생일까지 남은 일수 계산 방법
+-- 만약 올해생일날짜 - 지금날짜 값이 양수면 생일이 안지났으므로 올해생일날짜 - 지금날짜 면 된다.
+-- 만약 올해생일날짜 - 지금날짜 값이 음수면 생일이 지났으므로 내년생일날짜 - 지금날짜 면 된다.
+SELECT
+        emp_no
+        , emp_name
+        , jumin_num
+        , TO_CHAR(TO_DATE(CASE WHEN
+                    TO_DATE(
+                        TO_CHAR(SYSDATE, 'YYYY') || SUBSTR(jumin_num, 3, 4)
+                        , 'YYYYMMDD'
+                  ) - SYSDATE >= 0
+               THEN TO_CHAR(SYSDATE, 'YYYY')
+               ELSE TO_CHAR(SYSDATE + 365, 'YYYY')
+           END || SUBSTR(jumin_num, 3, 4), 'YYYYMMDD'), 'YYYY-MM-DD') "다가올생일날"
+        , TO_DATE(CASE WHEN
+                    TO_DATE(
+                        TO_CHAR(SYSDATE, 'YYYY') || SUBSTR(jumin_num, 3, 4)
+                        , 'YYYYMMDD'
+                  ) - SYSDATE >= 0
+               THEN TO_CHAR(SYSDATE, 'YYYY')
+               ELSE TO_CHAR(SYSDATE + 365, 'YYYY')
+           END || SUBSTR(jumin_num, 3, 4), 'YYYYMMDD')
+           - TO_DATE(TO_CHAR(SYSDATE, 'YYYYMMDD'), 'YYYYMMDD') "생일까지 남은 일수"
+FROM
+        employee
+ORDER BY
+        5 ASC;   -- SELECT 컬럼 순서 번호로 ORDER BY가 가능하다.
+    -- "생일까지 남은 일수" ASC;  -- SELECT 컬럼의 알리아스로 ORDER BY가 가능하다.
+
+-- FLOOR() : -4
+SELECT FLOOR(-3.1) FROM DUAL;
+
+-- FLOOR() : -3
+SELECT CEIL(-3.1) FROM DUAL;
+
