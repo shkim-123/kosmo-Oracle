@@ -187,6 +187,7 @@ WHERE c.emp_no = e.emp_no AND e.salary >= 3000;
 
 -- 103. 고객번호, 고객명, 고객주민번호를 출력하라.
 -- 단, 40살 이상인 담당직원이 담당한 고객 이어야 한다.
+-- ORACLE JOIN
 SELECT c.cus_no 고객번호, c.cus_name 고객명, c.jumin_num 고객주민번호
 FROM customer c, employee e
 WHERE c.emp_no = e.emp_no
@@ -195,4 +196,57 @@ WHERE c.emp_no = e.emp_no
                 DECODE(SUBSTR(e.jumin_num, 7, 1), '1', '19', '2', '19', '20')
                 || SUBSTR(e.jumin_num, 1, 2)) + 1 >= 40;
 
---
+-- EXTRACT() 함수 사용
+SELECT c.cus_no 고객번호, c.cus_name 고객명, c.jumin_num 고객주민번호
+FROM customer c, employee e
+WHERE c.emp_no = e.emp_no
+        AND ( EXTRACT(YEAR FROM SYSDATE)
+                - EXTRACT(YEAR FROM TO_DATE(
+                    DECODE(SUBSTR(e.jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                        || SUBSTR(e.jumin_num, 1, 6), 'YYYYMMDD')) + 1 ) >= 40;
+
+-- ANSI JOIN
+SELECT c.cus_no 고객번호, c.cus_name 고객명, c.jumin_num 고객주민번호
+FROM customer c INNER JOIN employee e
+ON c.emp_no = e.emp_no
+        AND TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY'))
+            - TO_NUMBER(
+                DECODE(SUBSTR(e.jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                || SUBSTR(e.jumin_num, 1, 2)) + 1 >= 40;
+
+--  104. 고객번호, 고객명, 담당직원번호, 담당직원명, 담당직원소속부서명
+-- , 담당직원연봉등급, 담당직원직속상관명, 담당직원직속상관직급, 직속상관연봉등급 출력하라.
+-- 단, 고객은 다 나와야 하고 NULL은 없음으로 표시
+-- ORACLE JOIN
+SELECT c.cus_no       고객번호
+        , c.cus_name  고객명
+        , NVL(c.emp_no||'', '없음')     담당직원번호
+        , NVL(e1.emp_name, '없음')      담당직원명
+        , NVL(d.dep_name, '없음')        담당직원소속부서명
+        , NVL(s1.sal_grade_no||'', '없음')  담당직원연봉등급
+        , NVL(e2.emp_name, '없음')         담당직원직속상관명
+        , NVL(e2.jikup, '없음')            담당직원직속상관직급
+        , NVL(s2.sal_grade_no||'', '없음') 직속상관연봉등급
+FROM customer c, employee e1, dept d, salary_grade s1, employee e2, salary_grade s2
+WHERE c.emp_no = e1.emp_no(+) AND e1.dep_no = d.dep_no(+)
+        AND e1.salary BETWEEN s1.min_salary(+) AND s1.max_salary(+)
+        AND e1.mgr_emp_no = e2.emp_no(+)
+        AND e2.salary BETWEEN s2.min_salary(+) AND s2.max_salary(+)
+ORDER BY c.cus_no;
+
+-- ANSI JOIN
+SELECT c.cus_no       고객번호
+        , c.cus_name  고객명
+        , NVL(c.emp_no||'', '없음')     담당직원번호
+        , NVL(e1.emp_name, '없음')      담당직원명
+        , NVL(d.dep_name, '없음')        담당직원소속부서명
+        , NVL(s1.sal_grade_no||'', '없음')  담당직원연봉등급
+        , NVL(e2.emp_name, '없음')         담당직원직속상관명
+        , NVL(e2.jikup, '없음')            담당직원직속상관직급
+        , NVL(s2.sal_grade_no||'', '없음') 직속상관연봉등급
+FROM customer c LEFT OUTER JOIN employee e1 ON c.emp_no = e1.emp_no
+                LEFT OUTER JOIN dept d ON e1.dep_no = d.dep_no
+                LEFT OUTER JOIN salary_grade s1 ON e1.salary BETWEEN s1.min_salary AND s1.max_salary
+                LEFT OUTER JOIN employee e2 ON e1.mgr_emp_no = e2.emp_no
+                LEFT OUTER JOIN salary_grade s2 ON e2.salary BETWEEN s2.min_salary AND s2.max_salary
+ORDER BY c.cus_no;
