@@ -187,7 +187,7 @@ WHERE SUBSTR(jumin_num, 1, 1) IN('6', '7') AND SUBSTR(jumin_num, 7, 1) = '1';
 SELECT * FROM employee
 WHERE jumin_num LIKE '6_____1%' OR jumin_num LIKE '7_____1%';
 
--- 86. 직원번호, 직원명, 소속부서명 검색?
+-- 88. 직원번호, 직원명, 소속부서명 검색?
 SELECT
         e.emp_no
         , e.emp_name
@@ -197,7 +197,7 @@ FROM
 WHERE
         e.dep_no = d.dep_no
 
--- 87. 고객번호, 고객명, 고객담당직원이름 검색?
+-- 89. 고객번호, 고객명, 고객담당직원이름 검색?
 SELECT
         c.cus_no 고객번호
         , c.cus_name 고객명
@@ -206,3 +206,13 @@ FROM
         customer c, employee e
 WHERE
         c.emp_no = e.emp_no
+
+-- 90. 평균 연봉 보다 많이 받는 직원을 검색하면 ?
+SELECT *
+FROM employee
+WHERE salary > (SELECT avg(salary) FROM employee);
+
+--91. 직급별, 평균연봉 검색하면 ?
+SELECT jikup, AVG(salary)
+FROM employee
+GROUP BY jikup;
