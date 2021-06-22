@@ -214,6 +214,11 @@ ON c.emp_no = e.emp_no
                 DECODE(SUBSTR(e.jumin_num, 7, 1), '1', '19', '2', '19', '20')
                 || SUBSTR(e.jumin_num, 1, 2)) + 1 >= 40;
 
+-- 103-1. 10번 부서 또는 30번 부서 직원이 담당하는 고객을 검색하면?
+SELECT c.cus_no, c.cus_name
+FROM customer c, employee e
+WHERE c.emp_no = e.emp_no AND e.dep_no IN (10, 30)
+
 --  104. 고객번호, 고객명, 담당직원번호, 담당직원명, 담당직원소속부서명
 -- , 담당직원연봉등급, 담당직원직속상관명, 담당직원직속상관직급, 직속상관연봉등급 출력하라.
 -- 단, 고객은 다 나와야 하고 NULL은 없음으로 표시
@@ -250,3 +255,17 @@ FROM customer c LEFT OUTER JOIN employee e1 ON c.emp_no = e1.emp_no
                 LEFT OUTER JOIN employee e2 ON e1.mgr_emp_no = e2.emp_no
                 LEFT OUTER JOIN salary_grade s2 ON e2.salary BETWEEN s2.min_salary AND s2.max_salary
 ORDER BY c.cus_no;
+
+-- 105. 직원명, 직원전화번호 와 고객명, 고객전화번호를 종으로 붙여 출력하라
+SELECT emp_name||' 직원', phone
+FROM employee
+UNION
+SELECT cus_name||' 고객', tel_num
+FROM customer
+
+-- 106. 직원명, 직원전화번호 와 고객명, 고객전화번호를 종으로 붙여 출력하라. 조건은 중복허락
+SELECT emp_name, phone
+FROM employee
+UNION ALL
+SELECT cus_name, tel_num
+FROM customer
