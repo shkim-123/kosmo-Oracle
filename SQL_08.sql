@@ -58,7 +58,7 @@ SELECT
         , DECODE(SUBSTR(jumin_num, 7, 1), '1', '남', '3', '남', '여')  성별
         , SUM(salary)           급여합
         , ROUND(AVG(salary), 1) 평균급여
-        , COUNT(*)              인원수
+        , COUNT(*)||'명'        인원수
 FROM
         employee
 GROUP BY
@@ -75,7 +75,7 @@ SELECT
           END 성별
         , SUM(salary)           급여합
         , ROUND(AVG(salary), 1) 평균급여
-        , COUNT(*)              인원수
+        , COUNT(*)||'명'        인원수
 FROM
         employee
 GROUP BY
@@ -90,10 +90,138 @@ ORDER BY
 -- 129. 입사년도별로 입사년도, 인원수를 출력하고 년도별로 오름차순 하면?
 SELECT
         TO_CHAR(hire_date, 'YYYY')  입사년도
-        , COUNT(*)                  인원수
+        , COUNT(*)||'명'            인원수
 FROM
         employee
 GROUP BY
         TO_CHAR(hire_date, 'YYYY')
 ORDER BY
         1;
+
+-- 130. 부서별로 부서번호, 평균근무년수를 출력하면?
+-- (근년수는 소수점 둘째 자리에서 반올림할 것)
+SELECT
+        dep_no      부서번호
+        , ROUND(
+                AVG((SYSDATE - hire_date)/365), 1
+        ) 평균근무년수
+FROM
+        employee
+GROUP BY
+        dep_no;
+
+-- 131. 입사분기별로 입사분기, 인원수를 출력하면?
+SELECT
+        TO_CHAR(hire_date, 'Q')||'분기' 입사분기
+        , COUNT(*)                      인원수
+FROM
+        employee
+GROUP BY
+        TO_CHAR(hire_date, 'Q');
+
+-- 132. 입사연대별, 성별로 입사연대, 성별, 연대별입사자수 출력하면?
+SELECT
+        FLOOR(TO_NUMBER(TO_CHAR(hire_date, 'YYYY'))*0.1)||'0년대'      입사연대
+        , DECODE(SUBSTR(jumin_num, 7, 1), '1', '남', '3', '남', '여')  성별
+        , COUNT(*)       연대별입사자수
+FROM
+        employee
+GROUP BY
+        FLOOR(TO_NUMBER(TO_CHAR(hire_date, 'YYYY'))*0.1)||'0년대'
+        , DECODE(SUBSTR(jumin_num, 7, 1), '1', '남', '3', '남', '여');
+
+-- 133. 직원명, 입사일(년-월-일 ~/4분기 한글 1자리 요일), 퇴직일(년-월-일) 출력하면?
+-- <조건> 퇴직일은 입사 후 20년 5개월 10일 후
+SELECT
+        emp_name        직원명
+        , TO_CHAR(hire_date, 'YYYY"년"-MM"월"-DD"일" Q/"4분기" DY', 'NLS_DATE_LANGUAGE = Korean')  입사일
+        , TO_CHAR(ADD_MONTHS(hire_date+10, 5) + 20*365, 'YYYY"년"-MM"월"-DD"일"')   퇴직일
+FROM
+        employee;
+
+-- 134. 직원들이 있는 부서별로 부서번호, 부서위치, 직원수를 출력하면?
+SELECT
+        dep_no    부서번호
+        , loc     부서위치
+        , (SELECT COUNT(*) FROM employee e WHERE e.dep_no = d.dep_no GROUP BY e.dep_no) 직원수
+FROM
+        dept d
+GROUP BY
+        dep_no, loc
+ORDER BY
+        1;
+
+-- 135. 월별로 입사월, 인원수를 검색하면? 입사월 오름차순 유지
+-- <조건> 위 결과에서 2월, 9월은 없어서 빠진다.
+-- 2월, 9월도 포함시키고 인원수는 0으로 포함하려면?
+SELECT
+        TO_CHAR(hire_date, 'MM') 입사월
+        ,COUNT(*)                인원수
+FROM
+        employee
+GROUP BY
+        TO_CHAR(hire_date, 'MM')
+UNION ALL
+SELECT
+        '02'
+        , 0
+FROM
+        DUAL
+UNION ALL
+SELECT
+        '09'
+        , 0
+FROM
+        DUAL
+ORDER BY
+        1;
+
+-- 136. employee 테이블에서 직급순서대로 정렬하여 직급별로 직급, 직급평균연봉, 인원수를 검색하면?
+-- (높은 직급이 먼저 나와야함)
+SELECT
+        jikup           직급
+        , ROUND(AVG(salary),1)   직급평균연봉
+        , COUNT(*)      인원수
+FROM
+        employee
+GROUP BY
+        jikup
+ORDER BY
+        DECODE(jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5);
+
+-- 137. 부서별 부서번호, 부서명, 직원수, 관리고객수를 검색하면?
+SELECT
+        dep_no         부서번호
+        , dep_name     부서명
+        , (SELECT COUNT(*) FROM employee e WHERE d.dep_no = e.dep_no GROUP BY e.dep_no) 직원수
+        , (SELECT COUNT(*) FROM employee e, customer c WHERE d.dep_no = e.dep_no AND e.emp_no = c.emp_no
+                GROUP BY d.dep_no) 관리고객수
+FROM
+        dept d
+GROUP BY
+        dep_no, dep_name
+ORDER BY
+        1;
+
+-- 138. 퇴직일이 60세라는 기준 하에 아래처럼 출력하면?
+-- 직원번호, 직원명, 근무년차, 퇴직일까지 남은 년도, 생일(년-월-일 요일명),
+-- 소속부서명, 직속상관명, 직속상관 부서명.
+-- 단, 모든 직원 다 나오고, 직급 높은 사람이 먼저 나오고 직급이 같으면 나이가 많은 사람이 나와야함.
+SELECT
+        emp_no         직원번호
+        , emp_name     직원명
+        , CEIL((SYSDATE - hire_date)/365)  근무년차
+        , 60 - (TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER(
+                DECODE(SUBSTR(jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                                ||SUBSTR(jumin_num, 1, 2)) + 1 ) 퇴직일까지남은년도
+        , TO_CHAR(TO_DATE(DECODE(SUBSTR(jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                        ||SUBSTR(jumin_num, 1, 6), 'YYYYMMDD'), 'YYYY"년"-MM"월"-DD"일"') 생일
+        , (SELECT dep_name FROM dept d WHERE d.dep_no = e.dep_no)    소속부서명
+        , (SELECT e2.emp_name FROM employee e2 WHERE e2.emp_no = e.mgr_emp_no)  직속상관명
+        , (SELECT d.dep_name FROM employee e2, dept d
+                        WHERE e2.emp_no = e.mgr_emp_no AND d.dep_no = e2.dep_no) 직속상관부서명
+FROM
+        employee e
+ORDER BY
+        DECODE(jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5)
+        , DECODE(SUBSTR(jumin_num, 7, 1), '1', '19', '2', '19', '20')||SUBSTR(jumin_num, 1, 6)
