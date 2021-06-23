@@ -66,6 +66,27 @@ GROUP BY
 ORDER BY
         1;
 
+-- CASE 문
+SELECT
+        dep_no                  부서번호
+        , CASE
+             WHEN SUBSTR(jumin_num, 7, 1) IN ('1', '3') THEN '남'
+             ELSE '여'
+          END 성별
+        , SUM(salary)           급여합
+        , ROUND(AVG(salary), 1) 평균급여
+        , COUNT(*)              인원수
+FROM
+        employee
+GROUP BY
+        dep_no
+        , CASE
+             WHEN SUBSTR(jumin_num, 7, 1) IN ('1', '3') THEN '남'
+             ELSE '여'
+          END
+ORDER BY
+        1;
+
 -- 129. 입사년도별로 입사년도, 인원수를 출력하고 년도별로 오름차순 하면?
 SELECT
         TO_CHAR(hire_date, 'YYYY')  입사년도
