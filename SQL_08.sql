@@ -134,20 +134,45 @@ GROUP BY
 -- <조건> 퇴직일은 입사 후 20년 5개월 10일 후
 SELECT
         emp_name        직원명
-        , TO_CHAR(hire_date, 'YYYY"년"-MM"월"-DD"일" Q/"4분기" DY', 'NLS_DATE_LANGUAGE = Korean')  입사일
-        , TO_CHAR(ADD_MONTHS(hire_date+10, 5) + 20*365, 'YYYY"년"-MM"월"-DD"일"')   퇴직일
+        , TO_CHAR(hire_date, 'YYYY-MM-DD Q/"4분기" DY', 'NLS_DATE_LANGUAGE = Korean')  입사일
+        , TO_CHAR(ADD_MONTHS(hire_date+10, 5) + 20*365, 'YYYY-MM-DD')   퇴직일
 FROM
         employee;
 
--- 134. 직원들이 있는 부서별로 부서번호, 부서위치, 직원수를 출력하면?
+-- 134. 직원들이 있는 부서별로 부서번호, 부서위치, 직원수를 출력하면? 모든 부서 다 나와라
+-- ORACLE JOIN
 SELECT
-        dep_no    부서번호
-        , loc     부서위치
-        , (SELECT COUNT(*) FROM employee e WHERE e.dep_no = d.dep_no GROUP BY e.dep_no) 직원수
+        d.dep_no    부서번호
+        , d.loc     부서위치
+        , COUNT(e.emp_no) 직원수
+FROM
+        dept d, employee e
+WHERE
+        e.dep_no = d.dep_no(+)
+GROUP BY
+        d.dep_no, d.loc
+ORDER BY
+        1;
+
+-- ANSI JOIN
+SELECT
+        d.dep_no    부서번호
+        , d.loc     부서위치
+        , COUNT(e.emp_no) 직원수
+FROM
+        dept d RIGHT OUTER JOIN employee e ON e.dep_no = d.dep_no
+GROUP BY
+        d.dep_no, d.loc
+ORDER BY
+        1;
+
+-- 서브쿼리
+SELECT
+        d.dep_no    부서번호
+        , d.loc     부서위치
+        , (SELECT COUNT(*) FROM employee e WHERE e.dep_no = d.dep_no )직원수
 FROM
         dept d
-GROUP BY
-        dep_no, loc
 ORDER BY
         1;
 
@@ -193,15 +218,36 @@ ORDER BY
 SELECT
         dep_no         부서번호
         , dep_name     부서명
-        , (SELECT COUNT(*) FROM employee e WHERE d.dep_no = e.dep_no GROUP BY e.dep_no) 직원수
-        , (SELECT COUNT(*) FROM employee e, customer c WHERE d.dep_no = e.dep_no AND e.emp_no = c.emp_no
-                GROUP BY d.dep_no) 관리고객수
+        , (SELECT COUNT(*) FROM employee e WHERE d.dep_no = e.dep_no) 직원수
+        , (SELECT COUNT(*) FROM employee e, customer c WHERE d.dep_no = e.dep_no
+                AND e.emp_no = c.emp_no) 관리고객수
 FROM
-        dept d
-GROUP BY
-        dep_no, dep_name
-ORDER BY
-        1;
+        dept d ;
+
+-- ORACLE JOIN
+SELECT
+        d.dep_no           부서번호
+       , d.dep_name        부서명
+       , COUNT(DISTINCT e.emp_no) 직원수
+       , COUNT(c.cus_no)          관리고객수
+FROM employee e, dept d, customer c
+WHERE e.dep_no(+) = d.dep_no AND e.emp_no = c.emp_no(+)
+GROUP BY d.dep_no
+       , d.dep_name
+ORDER BY 1;
+
+-- ANSI JOIN
+SELECT
+        d.dep_no           부서번호
+       , d.dep_name        부서명
+       , COUNT(DISTINCT e.emp_no) 직원수
+       , COUNT(c.cus_no)          관리고객수
+FROM employee e RIGHT OUTER JOIN dept d  ON  e.dep_no = d.dep_no
+                LEFT OUTER JOIN customer c ON e.emp_no = c.emp_no
+GROUP BY d.dep_no
+       , d.dep_name
+ORDER BY 1;
+
 
 -- 138. 퇴직일이 60세라는 기준 하에 아래처럼 출력하면?
 -- 직원번호, 직원명, 근무년차, 퇴직일까지 남은 년도, 생일(년-월-일 요일명),
