@@ -215,3 +215,8 @@ SELECT cus_no, cus_name, tel_num, emp_name, jikup, dep_no
 FROM customer c LEFT OUTER JOIN employee e
         ON c.emp_no = e.emp_no AND e.dep_no = 10
 ORDER BY 1;
+
+SELECT cus_no, cus_name, tel_num, emp_name, jikup, dep_no
+FROM employee e RIGHT OUTER JOIN customer c
+        ON e.emp_no = c.emp_no AND e.dep_no = 10
+ORDER BY 1;
