@@ -262,6 +262,7 @@ ORDER BY 1;
 -- 직원번호, 직원명, 근무년차, 퇴직일까지 남은 년도, 생일(년-월-일 요일명),
 -- 소속부서명, 직속상관명, 직속상관 부서명.
 -- 단, 모든 직원 다 나오고, 직급 높은 사람이 먼저 나오고 직급이 같으면 나이가 많은 사람이 나와야함.
+-- SUBQUERY
 SELECT
         emp_no         직원번호
         , emp_name     직원명
@@ -270,7 +271,8 @@ SELECT
                 DECODE(SUBSTR(jumin_num, 7, 1), '1', '19', '2', '19', '20')
                                 ||SUBSTR(jumin_num, 1, 2)) + 1 ) 퇴직일까지남은년도
         , TO_CHAR(TO_DATE(DECODE(SUBSTR(jumin_num, 7, 1), '1', '19', '2', '19', '20')
-                        ||SUBSTR(jumin_num, 1, 6), 'YYYYMMDD'), 'YYYY"년"-MM"월"-DD"일"') 생일
+                        ||SUBSTR(jumin_num, 1, 6), 'YYYYMMDD'), 'YYYY-MM-DD DY'
+						, 'NLS_DATE_LANGUAGE = KOREAN') 생일
         , (SELECT dep_name FROM dept d WHERE d.dep_no = e.dep_no)    소속부서명
         , (SELECT e2.emp_name FROM employee e2 WHERE e2.emp_no = e.mgr_emp_no)  직속상관명
         , (SELECT d.dep_name FROM employee e2, dept d
@@ -280,3 +282,42 @@ FROM
 ORDER BY
         DECODE(jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5)
         , DECODE(SUBSTR(jumin_num, 7, 1), '1', '19', '2', '19', '20')||SUBSTR(jumin_num, 1, 6)
+
+-- ORACLE JOIN
+SELECT
+        e1.emp_no       직원번호
+        , e1.emp_name   직원명
+        , CEIL((SYSDATE - e1.hire_date)/365)  근무년차
+        , 60 - (TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER(
+                DECODE(SUBSTR(e1.jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                                ||SUBSTR(e1.jumin_num, 1, 2)) + 1 ) 퇴직일까지남은년도
+        , TO_CHAR(TO_DATE(DECODE(SUBSTR(e1.jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                        ||SUBSTR(e1.jumin_num, 1, 6), 'YYYYMMDD'), 'YYYY-MM-DD DY'
+						, 'NLS_DATE_LANGUAGE = KOREAN') 생일
+        , d1.dep_name   소속부서명
+        , e2.emp_name   직속상관명
+        , d2.dep_name   직속상관부서명
+FROM employee e1, dept d1, employee e2, dept d2
+WHERE e1.dep_no = d1.dep_no(+) AND e1.mgr_emp_no = e2.emp_no(+) AND e2.dep_no = d2.dep_no(+)
+ORDER BY DECODE(e1.jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5)
+        , DECODE(SUBSTR(e1.jumin_num, 7, 1), '1', '19', '2', '19', '20')||SUBSTR(e1.jumin_num, 1, 6)
+
+-- ANSI JOIN
+SELECT
+        e1.emp_no       직원번호
+        , e1.emp_name   직원명
+        , CEIL((SYSDATE - e1.hire_date)/365)  근무년차
+        , 60 - (TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER(
+                DECODE(SUBSTR(e1.jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                                ||SUBSTR(e1.jumin_num, 1, 2)) + 1 ) 퇴직일까지남은년도
+        , TO_CHAR(TO_DATE(DECODE(SUBSTR(e1.jumin_num, 7, 1), '1', '19', '2', '19', '20')
+                        ||SUBSTR(e1.jumin_num, 1, 6), 'YYYYMMDD'), 'YYYY-MM-DD DY'
+						, 'NLS_DATE_LANGUAGE = KOREAN') 생일
+        , d1.dep_name   소속부서명
+        , e2.emp_name   직속상관명
+        , d2.dep_name   직속상관부서명
+FROM employee e1 LEFT OUTER JOIN dept d1 ON e1.dep_no = d1.dep_no
+                 LEFT OUTER JOIN employee e2 ON e1.mgr_emp_no = e2.emp_no
+                 LEFT OUTER JOIN dept d2 ON e2.dep_no = d2.dep_no
+ORDER BY DECODE(e1.jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5)
+        , DECODE(SUBSTR(e1.jumin_num, 7, 1), '1', '19', '2', '19', '20')||SUBSTR(e1.jumin_num, 1, 6)
