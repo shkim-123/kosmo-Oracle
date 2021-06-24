@@ -166,7 +166,7 @@ GROUP BY
 ORDER BY
         1;
 
--- 서브쿼리
+-- SUBQUERY
 SELECT
         d.dep_no    부서번호
         , d.loc     부서위치
@@ -220,6 +220,7 @@ ORDER BY
 -- ORDER BY 에는 리얼컬럼, 순서번호, 알리아스가 올 수 있다.
 
 -- 137. 부서별 부서번호, 부서명, 직원수, 직원이관리하는고객수를 검색하면?
+-- SUBQUERY
 SELECT
         dep_no         부서번호
         , dep_name     부서명
