@@ -211,10 +211,15 @@ FROM
         employee
 GROUP BY
         jikup
+HAVING
+        COUNT(*) >= 5
+-- 인원수가 5 이상인 컬럼만 보고 싶을 경우
 ORDER BY
-        DECODE(jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5);
+    --  DECODE(jikup, '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5);
+        DECODE("직급", '사장', 1, '부장', 2, '과장', 3, '대리', 4, 5);
+-- ORDER BY 에는 리얼컬럼, 순서번호, 알리아스가 올 수 있다.
 
--- 137. 부서별 부서번호, 부서명, 직원수, 관리고객수를 검색하면?
+-- 137. 부서별 부서번호, 부서명, 직원수, 직원이관리하는고객수를 검색하면?
 SELECT
         dep_no         부서번호
         , dep_name     부서명
@@ -229,7 +234,11 @@ SELECT
         d.dep_no           부서번호
        , d.dep_name        부서명
        , COUNT(DISTINCT e.emp_no) 직원수
+    -- , COUNT(e.emp_no)
+    -- DISTINCT를 안 쓰면 직원수가 중복되서 나온다.
        , COUNT(c.cus_no)          관리고객수
+    -- , COUNT(DISTINCT c.cus_no)
+    -- DISTINCT를 쓰면 고객을 담당하는 직원수가 된다.
 FROM employee e, dept d, customer c
 WHERE e.dep_no(+) = d.dep_no AND e.emp_no = c.emp_no(+)
 GROUP BY d.dep_no
