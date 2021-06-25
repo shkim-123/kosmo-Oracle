@@ -103,23 +103,80 @@ FROM customer c LEFT OUTER JOIN employee e ON c.emp_no = e.emp_no
                 LEFT OUTER JOIN salary_grade s ON e.salary BETWEEN s.min_salary AND s.max_salary
 
 --102. 고객번호, 고객명, 고객주민번호를 출력하라. 단, 연봉이 3000 이상인 담당직원이 담당한 고객 이어야 한다.
+SELECT c.cus_no, c.cus_name, c.jumin_num
+FROM customer c, employee e
+WHERE c.emp_no = e.emp_no AND e.salary >= 3000
 
+SELECT c.cus_no, c.cus_name, c.jumin_num
+FROM customer c INNER JOIN employee e ON c.emp_no = e.emp_no AND e.salary >= 3000
 --103. 고객번호, 고객명, 고객주민번호를 출력하라. 단, 40살 이상인 담당직원이 담당한 고객 이어야 한다.
+SELECT c.cus_no, c.cus_name, c.jumin_num
+FROM customer c, employee e
+WHERE c.emp_no = e.emp_no AND EXTRACT(YEAR FROM SYSDATE)
+            - TO_NUMBER(DECODE(SUBSTR(e.jumin_num, 7, 1), '1', '19', '2', '19', '20')||SUBSTR(e.jumin_num, 1, 2)) + 1  > 40
+
+-- ANSI JOIN
+SELECT c.cus_no, c.cus_name, c.jumin_num
+FROM customer c INNER JOIN employee e ON c.emp_no = e.emp_no
+        AND EXTRACT(YEAR FROM SYSDATE)
+        - TO_NUMBER(DECODE(SUBSTR(e.jumin_num, 7, 1), '1', '19', '2', '19', '20')||SUBSTR(e.jumin_num, 1, 2)) + 1 >40
 --103-1. 10번 부서 또는 30번 부서 직원이 담당하는 고객을 검색하면?
+SELECT c.cus_name
+FROM customer c, employee e
+WHERE c.emp_no = e.emp_no AND e.dep_no IN (10, 30)
+
+-- ANSI JOIN
+SELECT c.cus_name
+FROM customer c INNER JOIN employee e ON c.emp_no = e.emp_no AND e.dep_no IN (10, 30)
 --
 --104. 고객번호, 고객명,
 --담당직원번호,담당직원명, 담당직원소속부서명, 담당직원연봉등급, 담당직원직속상관명, 담당직원직속상관직급,
 --직속상관연봉등급 출력하라. 단, 고객은 다 나와야 하고 NULL은 없음으로 표시
+SELECT c.cus_no, c.cus_name, NVL(e1.emp_no||'', '없음'), NVL(e1.emp_name, '없음') , NVL(d.dep_name, '없음'), NVL(s1.sal_grade_no||'', '없음' )
+        , NVL(e2.emp_name, '없음'), NVL(e2.jikup, '없음'), NVL(s2.sal_grade_no||'', '없음')
+FROM customer c, employee e1, dept d, salary_grade s1, employee e2, salary_grade s2
+WHERE c.emp_no = e1.emp_no(+) AND e1.dep_no = d.dep_no(+) AND e1.salary BETWEEN s1.min_salary(+) AND s1.max_salary(+)
+            AND e1.mgr_emp_no = e2.emp_no(+) AND e2.salary BETWEEN s2.min_salary(+) AND s2.max_salary(+)
+
+SELECT c.cus_no, c.cus_name, NVL(e1.emp_no||'', '없음'), NVL(e1.emp_name, '없음'), NVL(d.dep_name, '없음'), NVL(s1.sal_grade_no||'', '없음')
+        , NVL(e2.emp_name, '없음'), nvl(e2.jikup, '없음'), NVL(s2.sal_grade_no||'', '없음')
+FROM customer c LEFT OUTER JOIN employee e1 ON c.emp_no = e1.emp_no
+                LEFT OUTER JOIN dept d ON e1.dep_no = d.dep_no
+                LEFT OUTER JOIN salary_grade s1 ON e1.salary BETWEEN s1.min_salary AND s1.max_salary
+                LEFT OUTER JOIN employee e2 ON e1.mgr_emp_no = e2.emp_no
+                LEFT OUTER JOIN salary_grade s2 ON e2.salary BETWEEN s2.min_salary AND s2.max_salary
 --
 --
 --105. 직원명, 직원전화번호 와 고객명, 고객전화번호를 종으로 붙여 출력하라. 조건은 중복하지 말 것
+SELECT emp_name, phone
+FROM employee
+UNION
+SELECT cus_name, tel_num
+FROM customer
 --106. 직원명, 직원전화번호 와 고객명, 고객전화번호를 종으로 붙여 출력하라. 조건은 중복허락
+SELECT emp_name, phone
+FROM employee
+UNION ALL
+SELECT cus_name, tel_num
+FROM customer
 --108. 최고 연봉을 받는 직원을 검색하라
+SELECT *
+FROM employee
+WHERE salary = (SELECT MAX(salary) FROM employee)
 --109. 평균 연봉 이상을 받는 직원을 검색하라
+SELECT *
+FROM employee
+WHERE salary >= (SELECT AVG(salary) FROM employee)
 --110. 20번 부서에서 최고 연봉자 직원을 검색하라
+SELECT *
+FROM employee
+WHERE salary = (SELECT MAX(salary) FROM employee WHERE dep_no = 20) AND dep_no = 20;
 --
 --111. 직원명, 직급, 연봉, 전체연봉에서 차지하는 비율을 검색하라. 단, 전체연봉에서 차지하는 비율은 소수점 버림하고 %로 표현하라.
 --단, 높은 비율이 먼저 나오게 정렬하라.
+SELECT emp_no, jikup, salary, FLOOR((salary/(SELECT SUM(salary) FROM employee))*100)
+FROM employee
+ORDER BY (salary/(SELECT SUM(salary) FROM employee))*100 DESC
 --
 --112. 10번 부서 직원들이 관리하는 고객번호, 고객명, 직원번호를 검색하면?
 --113. 평균 연봉 이상이고 최대 연봉 미만의 직원명, 연봉, 전체평균연봉, 전체최대연봉을 출력하면?
