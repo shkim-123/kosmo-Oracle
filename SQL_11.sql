@@ -53,28 +53,58 @@ VALUES((SELECT NVL(MAX(b_no), 0)+1 FROM board)
 -- 출력되는 데이터는 단순역순번호, 제목, 글쓴이, 작성일(년-월-일), 조회수 이다.
 -- 정렬 기준은 그룹번호 내림차순, 출력순서번호 오름차순 이다.
 -- 들여쓰기는 print_level 컬럼 안의 데이터를 가지고 들여쓰기를 표현하십시오.
+
+-- 처음 작성한 쿼리
 SELECT ROWNUM, zxc.* FROM (
-  SELECT CASE WHEN print_level > 0 THEN LPAD('ㄴ', print_level*6, ' ')
-            END||subject "SUBJECT"
-            , writer
-            , TO_CHAR(reg_date, 'YYYY-MM-DD') "REG_DATE"
-            , readcount
-  FROM board
-  ORDER BY group_no, print_no DESC
+    SELECT CASE WHEN print_level > 0 THEN LPAD('ㄴ', print_level*6, ' ')
+              END||subject "SUBJECT"
+              , writer
+              , TO_CHAR(reg_date, 'YYYY-MM-DD') "REG_DATE"
+              , readcount
+    FROM board
+    ORDER BY group_no, print_no DESC
 ) zxc ORDER BY ROWNUM DESC
 
 
-SELECT ROWNUM, zxc.* FROM (
-  SELECT LPAD(' ', print_level*5, ' ')||DECODE(print_no, 0, '', 'ㄴ')||subject "SUBJECT"
-            , writer
-            , TO_CHAR(reg_date, 'YYYY-MM-DD') "REG_DATE"
-            , readcount
-  FROM board
-  ORDER BY group_no, print_no DESC
-) zxc ORDER BY ROWNUM DESC
+-- 인라인뷰에 CNT 추가한 쿼리
+SELECT x.cnt - ROWNUM + 1  "번호"
+        , CASE WHEN print_level > 0 THEN LPAD('ㄴ', print_level*6, ' ')
+        END||subject     "제목"
+        , writer         "글쓴이"
+        , TO_CHAR(reg_date, 'YYYY-MM-DD') "작성일"
+        , readcount      "조회수"
+FROM board, (SELECT COUNT(*) "CNT" FROM board) x
+ORDER BY group_no DESC, print_no
 
 
+-- 정답
+SELECT x.cnt - ROWNUM + 1  "번호", b.*
+FROM (
+    SELECT
+            LPAD(' ', print_level*5, ' ')||DECODE(print_no, 0, '', 'ㄴ')||subject "글제목"
+            , writer         "글쓴이"
+            , TO_CHAR(reg_date, 'YYYY-MM-DD') "작성일"
+            , readcount      "조회수"
+    FROM board
+    ORDER BY group_no DESC, print_no
+) b, (SELECT COUNT(*) CNT FROM board) x
 
-SELECT ROWNUM, zxc.* FROM (
-SELECT * FROM employee ORDER BY emp_no DESC
-) zxc ORDER BY ROWNUM DESC
+
+commit
+
+
+-- 역순 번호 처리
+-- 1
+SELECT (SELECT COUNT(*) FROM employee) - ROWNUM + 1 "역순번호"
+        , ROWNUM  "정순번호"
+        , e.*
+FROM employee e
+-- 총 개수 - 정순번호 + 1 -> 역순번호
+-- 단, 서브쿼리를 반복적으로 작동되는 SQL문이라서 부하가 많이 걸린다.
+
+-- 2
+SELECT x.cnt - ROWNUM + 1 "역순번호"
+        , ROWNUM  "정순번호"
+        , e.*
+FROM employee e, (SELECT COUNT(*) "CNT" FROM employee) x
+-- 인라인뷰로 처리
