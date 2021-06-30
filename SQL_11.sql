@@ -54,7 +54,7 @@ VALUES((SELECT NVL(MAX(b_no), 0)+1 FROM board)
 -- 정렬 기준은 그룹번호 내림차순, 출력순서번호 오름차순 이다.
 -- 들여쓰기는 print_level 컬럼 안의 데이터를 가지고 들여쓰기를 표현하십시오.
 SELECT ROWNUM, zxc.* FROM (
-  SELECT CASE WHEN print_level > 0 THEN LPAD('ㄴ', print_level+LENGTH(subject), ' ')
+  SELECT CASE WHEN print_level > 0 THEN LPAD('ㄴ', print_level*6, ' ')
             END||subject "SUBJECT"
             , writer
             , TO_CHAR(reg_date, 'YYYY-MM-DD') "REG_DATE"
@@ -62,6 +62,17 @@ SELECT ROWNUM, zxc.* FROM (
   FROM board
   ORDER BY group_no, print_no DESC
 ) zxc ORDER BY ROWNUM DESC
+
+
+SELECT ROWNUM, zxc.* FROM (
+  SELECT LPAD(' ', print_level*5, ' ')||DECODE(print_no, 0, '', 'ㄴ')||subject "SUBJECT"
+            , writer
+            , TO_CHAR(reg_date, 'YYYY-MM-DD') "REG_DATE"
+            , readcount
+  FROM board
+  ORDER BY group_no, print_no DESC
+) zxc ORDER BY ROWNUM DESC
+
 
 
 SELECT ROWNUM, zxc.* FROM (
